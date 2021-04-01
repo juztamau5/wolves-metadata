@@ -1,0 +1,73 @@
+################################################################################
+# This workflow will do a clean install of node dependencies, build the source
+# code and run tests across different versions of node.
+#
+# For more information see:
+#
+#   https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+#
+# This workflow uses the following GitHub Actions secrets:
+#
+#   * INFURA_API_KEY: Your API key for Infura. Obtain one at https://infura.io/
+#
+################################################################################
+
+name: Node.js CI
+
+# Controls when the action will run. Triggers the workflow on push or pull
+# request events
+on: [push, pull_request]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in
+# parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-18.04
+            node-version: 12
+          - os: ubuntu-20.04
+            node-version: 14
+
+    # Steps represent a sequence of tasks that will be executed as part of the
+    # job
+    steps:
+      - name: Build environment information
+        run: 'echo "Matrix OS: ${{ matrix.os }} on $HOSTNAME with $(getconf _NPROCESSORS_ONLN) cores"'
+
+        # Check-out the repository under $GITHUB_WORKSPACE, so the job can
+        # access it
+      - name: Checkout main repo
+        uses: actions/checkout@v2
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Restore node modules
+        id: restore-node
+        uses: actions/cache@v2
+        with:
+          path: |
+            node_modules
+          key: npm-install-${{ matrix.os }}-${{ matrix.node-version }}-${{ hashFiles('package.json', 'yarn.lock', 'tools/patch-depends.sh', 'tools/depends/npm/**') }}
+
+      - name: yarn install
+        if: steps.restore-node.outputs.cache-hit != 'true'
+        run: yarn install
+
+      - name: yarn run audit
+        run: yarn run audit
+
+      - name: yarn lint
+        run: yarn lint
+
+      - name: yarn test
+        run: yarn test
