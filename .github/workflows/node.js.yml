@@ -59,8 +59,17 @@ jobs:
             node_modules
           key: npm-install-${{ matrix.os }}-${{ matrix.node-version }}-${{ hashFiles('package.json', 'yarn.lock', 'tools/patch-depends.sh', 'tools/depends/npm/**') }}
 
+      - name: Restore C++ libraries
+        id: restore-cpp-libraries
+        uses: actions/cache@v2
+        with:
+          path: |
+            test/generated
+          key: restore-cpp-libraries-${{ matrix.os }}-${{ hashFiles('cpp/**', 'tools/depends/native/**', 'tools/depends/wasm/**') }}
+
       - name: Restore C++ dependencies
         id: restore-cpp-depends
+        if: steps.restore-cpp-libraries.outputs.cache-hit != 'true'
         uses: actions/cache@v2
         with:
           path: |
@@ -77,14 +86,18 @@ jobs:
 
       # Required for "git am" in depends step
       - name: Set git credentials
-        if: steps.restore-cpp-depends.outputs.cache-hit != 'true'
+        if: steps.restore-cpp-libraries.outputs.cache-hit != 'true' && steps.restore-cpp-depends.outputs.cache-hit != 'true'
         run: |
           git config --global user.name "CI runner"
           git config --global user.email "wolfpack@wolvesofwallstreet.finance"
 
       - name: Build C++ dependencies
-        if: steps.restore-cpp-depends.outputs.cache-hit != 'true'
+        if: steps.restore-cpp-libraries.outputs.cache-hit != 'true' && steps.restore-cpp-depends.outputs.cache-hit != 'true'
         run: yarn depends
+
+      - name: Build C++ libraries
+        if: steps.restore-cpp-libraries.outputs.cache-hit != 'true'
+        run: yarn wasm
 
       - name: yarn lint
         run: yarn lint
