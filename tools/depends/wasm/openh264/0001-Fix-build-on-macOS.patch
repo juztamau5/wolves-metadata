@@ -1,0 +1,30 @@
+From c0a6341ef85441d1fb45e54f2ac09e4aa6953020 Mon Sep 17 00:00:00 2001
+From: Marquise Stein <botocratic@gmail.com>
+Date: Sat, 11 Jul 2020 10:40:46 -0700
+Subject: [PATCH] Fix build on macOS
+
+Error was:
+
+    shared:ERROR: dynamic_lookup: No such file or directory
+    ("dynamic_lookup" was expected to be an input file, based on the
+    commandline arguments provided)
+---
+ build/platform-darwin.mk | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/build/platform-darwin.mk b/build/platform-darwin.mk
+index 6f91daf..f899c7d 100644
+--- a/build/platform-darwin.mk
++++ b/build/platform-darwin.mk
+@@ -5,7 +5,7 @@ SHAREDLIBSUFFIXFULLVER=$(FULL_VERSION).$(SHAREDLIBSUFFIX)
+ SHAREDLIBSUFFIXMAJORVER=$(SHAREDLIB_MAJORVERSION).$(SHAREDLIBSUFFIX)
+ CURRENT_VERSION := 2.1.0
+ COMPATIBILITY_VERSION := 2.1.0
+-SHLDFLAGS = -dynamiclib -twolevel_namespace -undefined dynamic_lookup \
++SHLDFLAGS = -dynamiclib -twolevel_namespace \
+ 	-fno-common -headerpad_max_install_names -install_name \
+ 	$(SHAREDLIB_DIR)/$(LIBPREFIX)$(PROJECT_NAME).$(SHAREDLIBSUFFIXMAJORVER)
+ SHARED = -dynamiclib
+-- 
+2.20.1
+

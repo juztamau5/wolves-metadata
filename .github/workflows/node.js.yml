@@ -59,12 +59,32 @@ jobs:
             node_modules
           key: npm-install-${{ matrix.os }}-${{ matrix.node-version }}-${{ hashFiles('package.json', 'yarn.lock', 'tools/patch-depends.sh', 'tools/depends/npm/**') }}
 
+      - name: Restore C++ dependencies
+        id: restore-cpp-depends
+        uses: actions/cache@v2
+        with:
+          path: |
+            tools/dist
+            tools/repos/emsdk
+          key: restore-cpp-depends-${{ matrix.os }}-${{ hashFiles('tools/depends/native/**', 'tools/depends/wasm/**') }}
+
       - name: yarn install
         if: steps.restore-node.outputs.cache-hit != 'true'
         run: yarn install
 
       - name: yarn run audit
         run: yarn run audit
+
+      # Required for "git am" in depends step
+      - name: Set git credentials
+        if: steps.restore-cpp-depends.outputs.cache-hit != 'true'
+        run: |
+          git config --global user.name "CI runner"
+          git config --global user.email "wolfpack@wolvesofwallstreet.finance"
+
+      - name: Build C++ dependencies
+        if: steps.restore-cpp-depends.outputs.cache-hit != 'true'
+        run: yarn depends
 
       - name: yarn lint
         run: yarn lint

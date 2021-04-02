@@ -1,0 +1,25 @@
+#!/bin/bash
+################################################################################
+#
+#  Copyright (C) 2020 Marquise Stein
+#  This file is part of 8bitbot - https://github.com/botocracy/8bitbot
+#
+#  SPDX-License-Identifier: Apache-2.0
+#  See the file LICENSE.txt for more information.
+#
+################################################################################
+
+# Enable strict shell mode
+set -o errexit
+set -o nounset
+set -o pipefail
+
+# Get the absolute path to this script
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# Set pkgconfig environment variables
+PKG_CONFIG_PATH="${SCRIPT_DIR}/dist/lib/pkgconfig"
+export PKG_CONFIG_PATH
+
+# Run pkgconfig
+exec /usr/bin/pkg-config "$@"
