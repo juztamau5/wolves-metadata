@@ -11,3 +11,6 @@
 /tools/dist
 /tools/repos
 /tools/stamps
+
+# Generated WASM libraries
+/test/generated
