@@ -1,6 +1,6 @@
 {
-  "include": ["test"],
-  "exclude": ["node_modules"],
+  "include": ["src", "test"],
+  "exclude": ["node_modules", "web_modules"],
   "compilerOptions": {
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
